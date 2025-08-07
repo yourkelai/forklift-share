@@ -1,0 +1,38 @@
+<nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #0d47a1, #1e88e5);">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <i class="fas fa-forklift"></i> 叉车维修技术共享平台
+            <span class="system-status status-good">系统运行正常</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/"><i class="fas fa-home"></i> 首页</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/platform_docs"><i class="fas fa-file-alt"></i> 平台文档</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/demands"><i class="fas fa-exchange-alt"></i> 需求展示</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/submit_document"><i class="fas fa-plus-circle"></i> 发布文档</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown">
+                        <i class="fas fa-user"></i> {{ session.username }}
+                    </a>
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item" href="/dashboard"><i class="fas fa-tachometer-alt"></i> 仪表盘</a>
+                        <a class="dropdown-item" href="#"><i class="fas fa-cog"></i> 账户设置</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="/logout"><i class="fas fa-sign-out-alt"></i> 退出登录</a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>

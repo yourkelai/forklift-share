@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>文档审核</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <h2>待审核文档</h2>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        {% if documents %}
+        <div class="list-group">
+            {% for doc in documents %}
+            <div class="list-group-item">
+                <h5>{{ doc.title }}</h5>
+                <p>作者: {{ doc.author.username }} | 价格: {{ doc.price }}分</p>
+                <p>提交时间: {{ doc.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                <div>
+                    <a href="{{ url_for('approve_document', doc_id=doc.id) }}" class="btn btn-sm btn-success">批准</a>
+                    <a href="{{ url_for('reject_document', doc_id=doc.id) }}" class="btn btn-sm btn-danger">拒绝</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">暂无待审核文档</div>
+        {% endif %}
+    </div>
+</body>
+</html>

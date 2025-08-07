@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>叉车维修技术共享平台</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .usage-guide {
+            background-color: #e8f4ff;
+            border: 1px solid #cfe2ff;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .usage-guide h5 {
+            color: #0d6efd;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #0d6efd;
+            padding-bottom: 10px;
+        }
+        .usage-guide ol {
+            padding-left: 20px;
+        }
+        .usage-guide li {
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        .guide-toggle {
+            cursor: pointer;
+            color: #0d6efd;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            display: inline-block;
+        }
+        .document-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 20px;
+        }
+        .document-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .badge-price {
+            background-color: #ffc107;
+            color: #212529;
+            font-size: 1rem;
+            padding: 5px 10px;
+        }
+        
+        /* 社区发布区样式 */
+        .community-feed {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .feed-item {
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            border-left: 3px solid #0d6efd;
+            margin-bottom: 10px;
+            color: #333; /* 确保文字颜色为深色 */
+        }
+        .avatar-circle {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #555;
+        }
+        .feed-header {
+            display: flex;
+            align-items: center;
+        }
+        .feed-text {
+            margin: 5px 0;
+        }
+        .feed-document {
+            font-size: 0.85rem;
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        /* 最新需求样式 */
+        .demand-item {
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f1f8e9;
+            border-left: 3px solid #4caf50;
+            margin-bottom: 10px;
+        }
+        .demand-title {
+            font-weight: bold;
+            color: #333;
+        }
+        .demand-points {
+            background-color: #4caf50;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="mb-4">叉车维修技术共享平台</h1>
+        
+        <div class="usage-guide">
+            <h5><i class="fas fa-book"></i> 平台使用指南</h5>
+            <div class="collapse show" id="guideContent">
+                <ol>         
+                    <li>叉车维修技术共享平台是全球叉车维修技术的交流、分享、点赞平台；</li>
+                    <li>先注册，后登录。登录后可以查看想学习的技术文档，也可以发表自己技术文档（维修经验或方法体会）。</li>
+                    <li>查看想学习的技术文档需<span class="highlight">消耗积分</span>，发表自己技术文档会<span class="highlight">获得积分</span>。</li>
+                    <li>平台上的文档均由作者自行上传，作品中所讲解的技术是否正确、有用，由阅读者自主把控，可以参考该作品的点赞。读后或试行后，可以通过点赞或差评来支持或反对该作品所述技术。</li>
+                    <li>每一位新注册者，平台会<span class="highlight">赠送100积分</span>。如积分不够，可以先发表技术文档创造新积分或者点击"发布"要求交换获取积分（内容：要求用服务换积分或用配件换积分）。</li>
+                    <li>每一位资深平台成员，可以用自己的积分，兑换平台上的礼品或其他平台成员所提供的用于交换积分的服务或配件（平台成员所提供的用于交换积分的服务或配件的品质、保用均由提供者负责，平台只是提供信息渠道服务）。</li>
+                </ol>
+                <div class="guide-toggle" data-toggle="collapse" data-target="#guideContent">
+                    <i class="fas fa-chevron-up"></i> 收起指南
+                </div>
+            </div>
+        </div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3>技术文档列表</h3>
+                    <div>
+                        <span class="badge bg-primary">文档总数: {{ documents|length }}</span>
+                        <button class="btn btn-sm btn-outline-secondary" id="sortBtn">
+                            <i class="fas fa-sort"></i> 排序
+                        </button>
+                    </div>
+                </div>
+                
+                {% if documents %}
+                    <div class="list-group" id="documentsList">
+                        {% for doc in documents %}
+                        <a href="{{ url_for('view_document', doc_id=doc.id) }}" class="list-group-item list-group-item-action document-card">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">{{ doc.title }}</h5>
+                                <span class="badge-price">{{ doc.price }}分</span>
+                            </div>
+                            <div class="d-flex justify-content-between mt-2">
+                                <div>
+                                    <span class="text-muted">作者: {{ doc.author.username }}</span>
+                                    <span class="ms-2 text-muted">阅读量: {{ doc.read_count }}</span>
+                                </div>
+                                <div>
+                                    {% set likes = doc.comments|selectattr('comment_type', 'equalto', 'like')|list|length %}
+                                    {% set comments = doc.comments|selectattr('comment_type', 'equalto', 'comment')|list|length %}
+                                    <span class="badge bg-success">点赞: {{ likes }}</span>
+                                    <span class="badge bg-secondary ms-1">评论: {{ comments }}</span>
+                                </div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> 暂无可用文档，成为第一个分享技术的人吧！
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">用户操作</h5>
+                        {% if 'user_id' in session %}
+                            <p>欢迎, {{ session.username }}</p>
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-block mb-2">
+                                <i class="fas fa-tachometer-alt"></i> 我的仪表盘
+                            </a>
+                            <a href="{{ url_for('submit_document') }}" class="btn btn-success btn-block mb-2">
+                                <i class="fas fa-plus"></i> 发布技术文档
+                            </a>
+                            <a href="{{ url_for('submit_demand') }}" class="btn btn-info btn-block mb-2">
+                                <i class="fas fa-bullhorn"></i> 发布需求
+                            </a>
+                            <a href="{{ url_for('logout') }}" class="btn btn-secondary btn-block">
+                                <i class="fas fa-sign-out-alt"></i> 退出登录
+                            </a>
+                        {% else %}
+                            <a href="{{ url_for('login') }}" class="btn btn-primary btn-block mb-2">
+                                <i class="fas fa-sign-in-alt"></i> 登录
+                            </a>
+                            <a href="{{ url_for('register') }}" class="btn btn-success btn-block">
+                                <i class="fas fa-user-plus"></i> 注册
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- 社区发布区 -->
+                <div class="card mt-3">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-bullhorn"></i> 社区发布区</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" placeholder="快速发布您的需求或想法..." id="quickPost">
+                            <button class="btn btn-primary" type="button" id="postButton">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="community-feed" id="communityFeed">
+                            {% for post in community_posts %}
+                            <div class="feed-item">
+                                <div class="d-flex">
+                                    <div class="feed-avatar me-2">
+                                        <div class="avatar-circle" style="background-color: {{ get_random_color() }}">
+                                            {{ post.user.username[:1] }}
+                                        </div>
+                                    </div>
+                                    <div class="feed-content">
+                                        <div class="feed-header">
+                                            <strong>{{ post.user.username }}</strong>
+                                            <small class="text-muted ms-2">{{ post.created_at.strftime('%m-%d %H:%M') }}</small>
+                                        </div>
+                                        <div class="feed-text">
+                                            {{ post.content }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-info">暂无社区动态</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="text-center mt-2">
+                            <a href="#" class="btn btn-sm btn-outline-primary">查看更多动态</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 最新需求 -->
+                <div class="card mt-3">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-list"></i> 最新需求</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="latestDemands">
+                            {% for demand in latest_demands %}
+                            <div class="demand-item">
+                                <div class="d-flex justify-content-between">
+                                    <span class="demand-title">{{ demand.title }}</span>
+                                    <span class="demand-points">{{ demand.points_required }}分</span>
+                                </div>
+                                <div class="mt-2 small">
+                                    {{ demand.description|truncate(60) }}
+                                </div>
+                                <div class="mt-1 text-end">
+                                    <a href="{{ url_for('demand_detail', demand_id=demand.id) }}" class="btn btn-sm btn-outline-success">
+                                        查看详情
+                                    </a>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-info">暂无需求</div>
+                            {% endfor %}
+                        </div>
+                        <div class="text-center mt-2">
+                            <a href="{{ url_for('demand_list') }}" class="btn btn-sm btn-outline-success">查看所有需求</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <h5 class="card-title">积分排行榜</h5>
+                        <ol>
+                            <li>张师傅 (1850分)</li>
+                            <li>李工 (1420分)</li>
+                            <li>王技师 (1265分)</li>
+                            <li>刘维修 (980分)</li>
+                            <li>赵师傅 (875分)</li>
+                        </ol>
+                        <p class="text-muted small">每周更新，分享文档获取更多积分</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap & Font Awesome -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <script>
+        // 生成随机颜色的函数（用于头像背景）
+        function getRandomColor() {
+            const colors = ['#e3f2fd', '#fff8e1', '#f1f8e9', '#fce4ec', '#e8f5e9'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        // 排序功能
+        $(document).ready(function() {
+            $('#sortBtn').click(function() {
+                const $list = $('#documentsList');
+                const $items = $list.children('.list-group-item');
+                
+                $items.sort(function(a, b) {
+                    const priceA = parseInt($(a).find('.badge-price').text());
+                    const priceB = parseInt($(b).find('.badge-price').text());
+                    return priceA - priceB;
+                });
+                
+                $list.empty().append($items);
+            });
+            
+            // 指南展开/收起
+            $('.guide-toggle').click(function() {
+                $(this).toggleClass('collapsed');
+                $(this).find('i').toggleClass('fa-chevron-up fa-chevron-down');
+                $(this).text($(this).text() === '收起指南' ? '展开指南' : '收起指南');
+            });
+            
+            // 社区发布功能
+            $('#postButton').click(function() {
+                const content = $('#quickPost').val().trim();
+                if (!content) {
+                    alert('请输入内容');
+                    return;
+                }
+                
+                // 发送AJAX请求到后端
+                $.ajax({
+                    url: '/add_community_post',
+                    type: 'POST',
+                    data: { content: content },
+                    success: function(response) {
+                        if (response.success) {
+                            // 成功后的处理
+                            const newPost = `
+                                <div class="feed-item">
+                                    <div class="d-flex">
+                                        <div class="feed-avatar me-2">
+                                            <div class="avatar-circle" style="background-color: ${getRandomColor()}">
+                                                ${response.username.charAt(0)}
+                                            </div>
+                                        </div>
+                                        <div class="feed-content">
+                                            <div class="feed-header">
+                                                <strong>${response.username}</strong>
+                                                <small class="text-muted ms-2">${response.created_at}</small>
+                                            </div>
+                                            <div class="feed-text">
+                                                ${response.content}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            $('#communityFeed').prepend(newPost);
+                            $('#quickPost').val('');
+                        } else {
+                            alert('发布失败: ' + response.error);
+                        }
+                    },
+                    error: function() {
+                        alert('网络错误，请重试');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

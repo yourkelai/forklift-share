@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>注册新账号</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .usage-guide {
+            background-color: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 0 5px 5px 0;
+        }
+        .usage-guide h5 {
+            color: #007bff;
+            margin-bottom: 15px;
+        }
+        .usage-guide ol {
+            padding-left: 20px;
+        }
+        .usage-guide li {
+            margin-bottom: 10px;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            padding: 3px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="usage-guide">
+            <h5><i class="fas fa-info-circle"></i> 叉车维修技术共享平台 使用说明</h5>
+            <ol>
+                <li>叉车维修技术共享平台是全球叉车维修技术的交流、分享、点赞平台；</li>
+                <li>先注册，后登录。登录后可以查看想学习的技术文档，也可以发表自己技术文档（维修经验或方法体会）。</li>
+                <li>查看想学习的技术文档需<span class="highlight">消耗积分</span>，发表自己技术文档会<span class="highlight">获得积分</span>。</li>
+                <li>平台上的文档均由作者自行上传，作品中所讲解的技术是否正确、有用，由阅读者自主把控，可以参考该作品的点赞。读后或试行后，可以通过点赞或差评来支持或反对该作品所述技术。</li>
+                <li>每一位新注册者，平台会<span class="highlight">赠送100积分</span>。如积分不够，可以先发表技术文档创造新积分或者点击"发布"要求交换获取积分（内容：要求用服务换积分或用配件换积分）。</li>
+                <li>每一位资深平台成员，可以用自己的积分，兑换平台上的礼品或其他平台成员所提供的用于交换积分的服务或配件（平台成员所提供的用于交换积分的服务或配件的品质、保用均由提供者负责，平台只是提供信息渠道服务）。</li>
+            </ol>
+        </div>
+        
+        <h2>注册新账号</h2>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <form method="POST" action="{{ url_for('register') }}">
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" class="form-control" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            <button type="submit" class="btn btn-success">注册</button>
+        </form>
+        <p class="mt-3">已有账号？<a href="{{ url_for('login') }}">立即登录</a></p>
+    </div>
+    
+    <!-- Font Awesome 图标 -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</body>
+</html>

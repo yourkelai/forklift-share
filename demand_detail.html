@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>需求详情 - 叉车维修技术共享平台</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        .demand-detail-card {
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        .demand-header {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: white;
+            padding: 30px;
+        }
+        .points-badge {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: white;
+            background: rgba(0,0,0,0.2);
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .demand-meta {
+            background-color: #fff8e1;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .user-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: #e3f2fd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #1565c0;
+        }
+        .action-buttons .btn {
+            border-radius: 30px;
+            padding: 10px 25px;
+            margin: 0 10px 10px 0;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .action-buttons .btn:hover {
+            transform: translateY(-3px);
+        }
+        .contact-section {
+            background-color: #e8f5e9;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 30px 0;
+        }
+        .similar-demands .card {
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+        .similar-demands .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .badge-type {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    {% include 'navbar.html' %}
+    
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-file-contract"></i> 需求详情</h2>
+            <a href="{{ url_for('demand_list') }}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left"></i> 返回列表
+            </a>
+        </div>
+        
+        <div class="demand-detail-card">
+            <div class="demand-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="badge badge-light p-2 mr-2">
+                            {% if demand.demand_type == 'service' %}
+                            <i class="fas fa-tools"></i> 服务需求
+                            {% else %}
+                            <i class="fas fa-cog"></i> 配件需求
+                            {% endif %}
+                        </span>
+                        <h3>{{ demand.title }}</h3>
+                    </div>
+                    <div class="points-badge">
+                        {{ demand.points_required }}分
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="demand-meta">
+                    <div class="row">
+                        <div class="col-md-6 d-flex align-items-center mb-3">
+                            <div class="user-avatar mr-3">
+                                {{ demand.user.username[:1] }}
+                            </div>
+                            <div>
+                                <h5 class="mb-0">{{ demand.user.username }}</h5>
+                                <div class="text-muted">
+                                    <i class="fas fa-user-clock"></i> 平台会员
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-center">
+                            <div>
+                                <div><i class="fas fa-star text-warning"></i> 信誉评分: 4.8/5.0</div>
+                                <div><i class="fas fa-check-circle text-success"></i> 已完成交易: 24次</div>
+                                <div><i class="fas fa-clock"></i> 发布时间: {{ demand.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-5">
+                    <h4 class="border-bottom pb-2">需求详情</h4>
+                    <div class="mt-4" style="font-size: 1.1rem; line-height: 1.8;">
+                        {{ demand.description }}
+                    </div>
+                </div>
+                
+                {% if demand.demand_type == 'service' %}
+                <div class="mb-5">
+                    <h4 class="border-bottom pb-2">服务要求</h4>
+                    <ul class="list-group list-group-flush mt-4">
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success mr-2"></i>
+                            需具备叉车维修资质证书
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success mr-2"></i>
+                            提供维修后3个月保修
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success mr-2"></i>
+                            需上门服务（地址：上海市浦东新区）
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success mr-2"></i>
+                            需在2周内完成服务
+                        </li>
+                    </ul>
+                </div>
+                {% else %}
+                <div class="mb-5">
+                    <h4 class="border-bottom pb-2">配件要求</h4>
+                    <ul class="list-group list-group-flush mt-4">
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success mr-2"></i>
+                            必须为原厂配件或同等质量替代品
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success mr-2"></i>
+                            提供购买凭证或质量证明
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success mr-2"></i>
+                            需在7天内发货
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success mr-2"></i>
+                            提供30天质量保证
+                        </li>
+                    </ul>
+                </div>
+                {% endif %}
+                
+                <div class="contact-section">
+                    <h4 class="border-bottom pb-2">联系发布者</h4>
+                    <div class="mt-4">
+                        <p>如果您能满足以上需求，请联系发布者：</p>
+                        <div class="d-flex align-items-center mt-3">
+                            <div class="mr-3">
+                                <i class="fas fa-phone-alt fa-2x text-primary"></i>
+                            </div>
+                            <div>
+                                <h5>联系电话</h5>
+                                <p class="lead">{{ demand.contact_info }}</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center mt-3">
+                            <div class="mr-3">
+                                <i class="fas fa-envelope fa-2x text-info"></i>
+                            </div>
+                            <div>
+                                <h5>电子邮箱</h5>
+                                <p class="lead">{{ demand.user.username }}@example.com</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="action-buttons text-center mt-4">
+                    <button class="btn btn-primary btn-lg">
+                        <i class="fas fa-handshake"></i> 接受需求
+                    </button>
+                    <button class="btn btn-outline-secondary btn-lg">
+                        <i class="fas fa-envelope"></i> 发送消息
+                    </button>
+                    <button class="btn btn-outline-danger btn-lg">
+                        <i class="fas fa-flag"></i> 举报需求
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="similar-demands mt-5">
+            <h4 class="mb-4">类似需求</h4>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <span class="badge-type {% if demand.demand_type == 'service' %}bg-info{% else %}bg-warning{% endif %} text-white">
+                                {{ "服务需求" if demand.demand_type == 'service' else "配件需求" }}
+                            </span>
+                            <h5 class="mt-2">叉车定期保养服务</h5>
+                            <p class="text-truncate">寻求专业技师提供3台叉车的季度保养服务...</p>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <span class="text-primary font-weight-bold">200积分/台</span>
+                                <a href="#" class="btn btn-sm btn-outline-primary">查看</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <span class="badge-type {% if demand.demand_type == 'service' %}bg-info{% else %}bg-warning{% endif %} text-white">
+                                {{ "服务需求" if demand.demand_type == 'service' else "配件需求" }}
+                            </span>
+                            <h5 class="mt-2">电动叉车电路维修</h5>
+                            <p class="text-truncate">电动叉车电路故障，需要专业电工诊断维修...</p>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <span class="text-primary font-weight-bold">150积分</span>
+                                <a href="#" class="btn btn-sm btn-outline-primary">查看</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <span class="badge-type {% if demand.demand_type == 'service' %}bg-info{% else %}bg-warning{% endif %} text-white">
+                                {{ "服务需求" if demand.demand_type == 'service' else "配件需求" }}
+                            </span>
+                            <h5 class="mt-2">叉车操作培训</h5>
+                            <p class="text-truncate">提供3名新员工叉车操作安全培训，需持证讲师...</p>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <span class="text-primary font-weight-bold">180积分/人</span>
+                                <a href="#" class="btn btn-sm btn-outline-primary">查看</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap & Font Awesome -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

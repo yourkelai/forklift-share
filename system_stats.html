@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>系统统计</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <h2 class="mb-4">系统运行统计</h2>
+        
+        <div class="card-deck mb-4">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">用户总数</h5>
+                    <p class="card-text display-4">{{ users }}</p>
+                </div>
+            </div>
+            
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">文档总数</h5>
+                    <p class="card-text display-4">{{ documents }}</p>
+                </div>
+            </div>
+            
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">流通总积分</h5>
+                    <p class="card-text display-4">{{ total_points }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4>积分系统统计</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="alert alert-secondary">
+                            <strong>系统创建积分:</strong> {{ stats.total_points_created }}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="alert alert-warning">
+                            <strong>手续费总额:</strong> {{ stats.total_fees_collected }}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="alert alert-success">
+                            <strong>奖励发放总额:</strong> {{ stats.total_rewards_given }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="progress mb-3" style="height: 30px;">
+                    <div class="progress-bar bg-success" style="width: {{ system_dependency }}%;">
+                        {{ system_dependency }}% 手续费依赖度
+                    </div>
+                </div>
+                <p class="text-muted">
+                    表示系统奖励中来自手续费的占比，值越高说明系统越可持续
+                </p>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h4>系统健康度分析</h4>
+            </div>
+            <div class="card-body">
+                {% if system_dependency|float > 70 %}
+                <div class="alert alert-success">
+                    <h5>健康状态：优秀</h5>
+                    <p>手续费池足以支持大部分奖励发放，系统可持续性强</p>
+                </div>
+                {% elif system_dependency|float > 40 %}
+                <div class="alert alert-warning">
+                    <h5>健康状态：良好</h5>
+                    <p>手续费池正在增长，系统逐步转向自维持状态</p>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <h5>健康状态：发展中</h5>
+                    <p>系统仍依赖初始积分创造，需要增加交易量</p>
+                </div>
+                {% endif %}
+                
+                <h5>优化建议：</h5>
+                <ul>
+                    <li>增加优质文档吸引更多阅读</li>
+                    <li>推出促销活动刺激交易</li>
+                    <li>当依赖度>80%时可考虑降低手续费比例</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

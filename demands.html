@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>积分交易需求 - 叉车维修技术共享平台</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        .demand-card {
+            border-left: 4px solid #ff9800;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .demand-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .demand-header {
+            background-color: #fff8e1;
+            padding: 15px;
+            border-bottom: 1px solid #ffecb3;
+            border-radius: 8px 8px 0 0;
+        }
+        .demand-body {
+            padding: 20px;
+        }
+        .demand-type {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        .type-service {
+            background-color: #e3f2fd;
+            color: #1565c0;
+        }
+        .type-parts {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        .demand-points {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #f57c00;
+        }
+        .demand-time {
+            font-size: 0.9rem;
+            color: #757575;
+        }
+        .btn-view {
+            border-radius: 20px;
+            padding: 5px 20px;
+        }
+        .create-demand {
+            background: linear-gradient(to right, #f5f5f5, #e0e0e0);
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+        .create-demand:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .filter-btn.active {
+            background-color: #1e88e5;
+            color: white;
+        }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e3f2fd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #1565c0;
+        }
+    </style>
+</head>
+<body>
+    {% include 'navbar.html' %}
+    
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-exchange-alt"></i> 积分交易需求</h2>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left"></i> 返回仪表盘
+            </a>
+        </div>
+        
+        <div class="create-demand">
+            <h3 class="mb-3">有服务或配件可以交换积分？</h3>
+            <p class="lead mb-4">发布您的需求，让其他用户用积分交换您的服务或配件</p>
+            <a href="/submit_demand" class="btn btn-warning btn-lg">
+                <i class="fas fa-plus-circle"></i> 发布新需求
+            </a>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4>最新需求</h4>
+                    <div class="btn-group">
+                        <button class="btn btn-outline-secondary filter-btn active" data-filter="all">全部</button>
+                        <button class="btn btn-outline-secondary filter-btn" data-filter="service">服务</button>
+                        <button class="btn btn-outline-secondary filter-btn" data-filter="parts">配件</button>
+                    </div>
+                </div>
+                
+                {% if demands %}
+                    {% for demand in demands %}
+                    <div class="demand-card" data-type="{{ demand.demand_type }}">
+                        <div class="demand-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="demand-type {% if demand.demand_type == 'service' %}type-service{% else %}type-parts{% endif %}">
+                                    {{ "服务需求" if demand.demand_type == 'service' else "配件需求" }}
+                                </span>
+                                <h5 class="mt-2 mb-0">{{ demand.title }}</h5>
+                            </div>
+                            <div class="text-right">
+                                <div class="demand-points">{{ demand.points_required }} 积分</div>
+                                <div class="demand-time">
+                                    <i class="far fa-clock"></i> {{ demand.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="demand-body">
+                            <div class="mb-3">
+                                {{ demand.description|truncate(200) }}
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <div class="user-avatar mr-2">
+                                        {{ demand.user.username[:1] }}
+                                    </div>
+                                    <div>
+                                        <strong>{{ demand.user.username }}</strong>
+                                        <div class="text-muted small">
+                                            <i class="fas fa-map-marker-alt"></i> 中国
+                                        </div>
+                                    </div>
+                                </div>
+                                <a href="/demand_detail/{{ demand.id }}" 
+                                   class="btn btn-primary btn-view">
+                                    查看详情 <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="alert alert-info text-center py-4">
+                        <i class="fas fa-info-circle fa-2x mb-3"></i>
+                        <h4>暂无需求发布</h4>
+                        <p>当前平台没有可用的积分交易需求</p>
+                        <a href="/submit_demand" class="btn btn-primary mt-2">
+                            <i class="fas fa-plus"></i> 成为第一个发布者
+                        </a>
+                    </div>
+                {% endif %}
+                
+                <!-- 分页控件 -->
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1">上一页</a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">下一页</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-lightbulb"></i> 积分交易指南</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <i class="fas fa-check-circle text-success mr-2"></i>
+                                发布服务需求（如叉车维修、技术指导）
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-check-circle text-success mr-2"></i>
+                                发布配件需求（如叉车零件、工具）
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-check-circle text-success mr-2"></i>
+                                设定合理的积分要求
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-check-circle text-success mr-2"></i>
+                                平台仅提供信息交流，交易风险自负
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-check-circle text-success mr-2"></i>
+                                完成交易后请及时关闭需求
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header bg-warning">
+                        <h5 class="mb-0"><i class="fas fa-exclamation-triangle"></i> 注意事项</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>平台仅提供信息发布服务，不参与实际交易过程。</p>
+                        <p>交易双方应自行核实对方身份和交易内容。</p>
+                        <p>如发生纠纷，平台不承担任何责任。</p>
+                        <p>请勿发布违法或与叉车维修无关的需求。</p>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-chart-line"></i> 需求统计</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-around text-center">
+                            <div>
+                                <div class="h4 mb-0">{{ demands|length }}</div>
+                                <div class="small text-muted">总需求</div>
+                            </div>
+                            <div>
+                                <div class="h4 mb-0">{{ service_demands }}</div>
+                                <div class="small text-muted">服务需求</div>
+                            </div>
+                            <div>
+                                <div class="h4 mb-0">{{ parts_demands }}</div>
+                                <div class="small text-muted">配件需求</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap & Font Awesome -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // 需求类型过滤
+            $('.filter-btn').click(function() {
+                const filter = $(this).data('filter');
+                
+                // 更新按钮状态
+                $('.filter-btn').removeClass('active');
+                $(this).addClass('active');
+                
+                // 显示/隐藏需求卡片
+                if (filter === 'all') {
+                    $('.demand-card').show();
+                } else {
+                    $('.demand-card').each(function() {
+                        if ($(this).data('type') === filter) {
+                            $(this).show();
+                        } else {
+                            $(this).hide();
+                        }
+                    });
+                }
+            });
+            
+            // 卡片悬停效果
+            $('.demand-card').hover(function() {
+                $(this).css('box-shadow', '0 5px 15px rgba(0,0,0,0.1)');
+            }, function() {
+                $(this).css('box-shadow', '0 2px 5px rgba(0,0,0,0.1)');
+            });
+        });
+    </script>
+</body>
+</html>

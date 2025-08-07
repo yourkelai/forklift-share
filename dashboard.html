@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户仪表盘 - 叉车维修技术共享平台</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            background-color: #f5f7fa;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        .dashboard-header {
+            background: linear-gradient(135deg, #1e88e5, #0d47a1);
+            color: white;
+            padding: 30px 0;
+            margin-bottom: 30px;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .user-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff9800, #ff5722);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: white;
+            margin: 0 auto 15px;
+            border: 3px solid white;
+        }
+        .points-badge {
+            background: linear-gradient(45deg, #ff9800, #ff5722);
+            border-radius: 20px;
+            padding: 5px 15px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            display: inline-block;
+            box-shadow: 0 3px 8px rgba(255, 152, 0, 0.3);
+        }
+        .feature-card {
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            margin-bottom: 25px;
+            border: none;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+        }
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+        }
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #1e88e5;
+        }
+        .doc-card {
+            border-radius: 12px;
+            border: none;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+        .doc-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
+        }
+        .doc-status-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 0.8rem;
+            padding: 5px 12px;
+            border-radius: 20px;
+        }
+        .progress {
+            height: 12px;
+            border-radius: 10px;
+        }
+        .recent-activity {
+            list-style: none;
+            padding-left: 0;
+        }
+        .recent-activity li {
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .recent-activity li:last-child {
+            border-bottom: none;
+        }
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            margin-right: 15px;
+        }
+        .bg-blue {
+            background-color: #e3f2fd;
+            color: #1e88e5;
+        }
+        .bg-green {
+            background-color: #e8f5e9;
+            color: #43a047;
+        }
+        .bg-orange {
+            background-color: #fff3e0;
+            color: #ff9800;
+        }
+        .btn-feature {
+            border-radius: 30px;
+            padding: 10px 25px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .btn-feature:hover {
+            transform: scale(1.05);
+        }
+        .feature-description {
+            color: #666;
+            font-size: 0.95rem;
+            margin-top: 10px;
+        }
+        .feature-highlight {
+            display: block;
+            font-weight: bold;
+            margin-top: 15px;
+            color: #0d47a1;
+        }
+        .section-title {
+            position: relative;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        .section-title:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(to right, #1e88e5, #0d47a1);
+            border-radius: 2px;
+        }
+        .error-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            max-width: 400px;
+            display: none;
+        }
+        .system-status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 10px;
+        }
+        .status-good {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status-warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <!-- 错误提示框 -->
+    <div class="alert alert-danger error-message" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+        <strong><i class="fas fa-exclamation-triangle"></i> 系统错误</strong>
+        <p class="error-detail"></p>
+    </div>
+
+    <!-- 使用新的导航栏模板 -->
+    {% include 'navbar.html' %}
+
+    <!-- 仪表盘头部 -->
+    <div class="dashboard-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-3 text-center">
+                    <div class="user-avatar">
+                        {{ session.username[:1] }}
+                    </div>
+                    <h4>{{ session.username }}</h4>
+                    <div class="points-badge">
+                        <i class="fas fa-coins"></i> 积分: {{ user.points }}
+                    </div>
+                </div>
+                <div class="col-md-9">
+                    <h2>用户仪表盘</h2>
+                    <p class="lead">欢迎回到叉车维修技术共享平台，这里可以管理您的文档、积分和交易需求</p>
+                    <div class="progress mt-3" style="height: 8px;">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: 65%;" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <p class="mt-2">平台等级: 高级技师 (还需350分升级)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- 平台功能区域 -->
+        <div class="row mb-5">
+            <div class="col-md-12">
+                <h3 class="section-title">平台功能</h3>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card text-center p-4">
+                    <div class="feature-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <h4>平台文档</h4>
+                    <p class="feature-description">浏览其他用户分享的技术文档，学习更多叉车维修技术</p>
+                    <a href="/platform_docs" class="btn btn-primary btn-feature">
+                        <i class="fas fa-book-open"></i> 查看文档
+                    </a>
+                    <span class="feature-highlight">
+                        <i class="fas fa-star"></i> 超过200篇技术文档
+                    </span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card text-center p-4">
+                    <div class="feature-icon">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <h4>需求展示</h4>
+                    <p class="feature-description">查看用户发布的服务和配件需求，用您的技能换取积分</p>
+                    <a href="/demands" class="btn btn-warning btn-feature">
+                        <i class="fas fa-handshake"></i> 查看需求
+                    </a>
+                    <span class="feature-highlight">
+                        <i class="fas fa-bolt"></i> 35个活跃需求
+                    </span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card text-center p-4">
+                    <div class="feature-icon">
+                        <i class="fas fa-plus-circle"></i>
+                    </div>
+                    <h4>发布文档</h4>
+                    <p class="feature-description">分享您的维修经验，获得积分奖励和技术认可</p>
+                    <a href="/submit_document" class="btn btn-success btn-feature">
+                        <i class="fas fa-pen"></i> 创建文档
+                    </a>
+                    <span class="feature-highlight">
+                        <i class="fas fa-gift"></i> 新文档奖励50积分
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- 我的文档区域 -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-file-contract"></i> 我的文档</h5>
+                            <a href="/submit_document" class="btn btn-light btn-sm">
+                                <i class="fas fa-plus"></i> 新建文档
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% if user_docs %}
+                            <div class="row">
+                                {% for doc in user_docs %}
+                                <div class="col-md-6 mb-4">
+                                    <div class="doc-card card h-100">
+                                        <div class="card-body position-relative">
+                                            <span class="doc-status-badge badge 
+                                                {% if doc.status == 'approved' %}bg-success{% elif doc.status == 'pending' %}bg-warning{% else %}bg-danger{% endif %}">
+                                                {{ "已批准" if doc.status == 'approved' else "待审核" if doc.status == 'pending' else "已拒绝" }}
+                                            </span>
+                                            <h5 class="card-title">{{ doc.title }}</h5>
+                                            <div class="d-flex justify-content-between mt-3">
+                                                <div>
+                                                    <span class="badge bg-info text-white">{{ doc.price }} 积分</span>
+                                                </div>
+                                                <div>
+                                                    <span class="text-muted"><i class="fas fa-eye"></i> {{ doc.read_count }}</span>
+                                                    <span class="text-muted ms-2"><i class="fas fa-comment"></i> 12</span>
+                                                </div>
+                                            </div>
+                                            <p class="card-text mt-2 text-muted small">
+                                                {{ doc.created_at.strftime('%Y-%m-%d') }}
+                                            </p>
+                                        </div>
+                                        <div class="card-footer bg-white">
+                                            <a href="/view_document/{{ doc.id }}" class="btn btn-sm btn-outline-primary">
+                                                查看详情
+                                            </a>
+                                            <a href="#" class="btn btn-sm btn-outline-secondary ms-1">
+                                                编辑
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                                <h5>暂无文档</h5>
+                                <p class="text-muted">您还没有创建任何技术文档</p>
+                                <a href="/submit_document" class="btn btn-primary" id="createFirstDoc">
+                                    <i class="fas fa-plus"></i> 创建第一个文档
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- 侧边栏 - 统计信息和活动 -->
+            <div class="col-md-4">
+                <!-- 统计信息卡片 -->
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-chart-line"></i> 数据统计</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                文档总数
+                                <span class="badge bg-primary">{{ user_docs|length }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                被阅读次数
+                                <span class="badge bg-success">{{ total_reads }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                获得积分
+                                <span class="badge bg-warning">{{ total_points }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                获得点赞
+                                <span class="badge bg-danger">{{ total_likes }}</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 最近活动 -->
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-history"></i> 最近活动</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="recent-activity">
+                            <li class="d-flex align-items-center">
+                                <div class="activity-icon bg-blue">
+                                    <i class="fas fa-eye"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">有人阅读了您的文档</h6>
+                                    <p class="mb-0 text-muted small">"电动叉车电池维护指南" · 2小时前</p>
+                                </div>
+                            </li>
+                            <li class="d-flex align-items-center">
+                                <div class="activity-icon bg-green">
+                                    <i class="fas fa-coins"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">获得积分奖励</h6>
+                                    <p class="mb-0 text-muted small">+50积分 · 文档被管理员批准</p>
+                                </div>
+                            </li>
+                            <li class="d-flex align-items-center">
+                                <div class="activity-icon bg-orange">
+                                    <i class="fas fa-thumbs-up"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">收到新点赞</h6>
+                                    <p class="mb-0 text-muted small">"液压系统故障排查" · 昨天</p>
+                                </div>
+                            </li>
+                            <li class="d-flex align-items-center">
+                                <div class="activity-icon bg-blue">
+                                    <i class="fas fa-comment"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">收到新评论</h6>
+                                    <p class="mb-0 text-muted small">"您的文档对我帮助很大！" · 昨天</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 快速操作 -->
+                <div class="card">
+                    <div class="card-header bg-warning">
+                        <h5 class="mb-0"><i class="fas fa-bolt"></i> 快速操作</h5>
+                    </div>
+                    <div class="card-body">
+                        <a href="/submit_document" class="btn btn-outline-primary btn-block mb-2">
+                            <i class="fas fa-plus"></i> 发布新文档
+                        </a>
+                        <a href="/demands" class="btn btn-outline-success btn-block mb-2">
+                            <i class="fas fa-exchange-alt"></i> 查看需求
+                        </a>
+                        <a href="/platform_docs" class="btn btn-outline-info btn-block">
+                            <i class="fas fa-file-alt"></i> 浏览文档库
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white mt-5 py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <h5><i class="fas fa-forklift"></i> 叉车维修技术共享平台</h5>
+                    <p class="text-muted">全球叉车维修技术的交流、分享、点赞平台</p>
+                </div>
+                <div class="col-md-2 mb-3">
+                    <h5>快速链接</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="/" class="text-white">首页</a></li>
+                        <li><a href="/platform_docs" class="text-white">平台文档</a></li>
+                        <li><a href="/demands" class="text-white">需求展示</a></li>
+                        <li><a href="#" class="text-white">关于我们</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <h5>帮助中心</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="/guide" class="text-white">使用指南</a></li>
+                        <li><a href="/points_rules" class="text-white">积分规则</a></li>
+                        <li><a href="/faq" class="text-white">常见问题</a></li>
+                        <li><a href="/contact" class="text-white">联系我们</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5>联系我们</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-envelope me-2"></i> contact@forklift-tech.com</li>
+                        <li><i class="fas fa-phone me-2"></i> 400-888-8888</li>
+                        <li><i class="fas fa-map-marker-alt me-2"></i> 上海市浦东新区</li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="bg-light">
+            <div class="text-center text-muted">
+                &copy; 2023 叉车维修技术共享平台. 保留所有权利.
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // 卡片悬停效果
+            $('.feature-card').hover(function() {
+                $(this).css('transform', 'translateY(-8px)');
+            }, function() {
+                $(this).css('transform', 'translateY(0)');
+            });
+            
+            // 文档卡片悬停效果
+            $('.doc-card').hover(function() {
+                $(this).css('box-shadow', '0 8px 18px rgba(0, 0, 0, 0.1)');
+            }, function() {
+                $(this).css('box-shadow', '0 4px 10px rgba(0, 0, 0, 0.05)');
+            });
+            
+            // 错误处理：当创建文档按钮点击出错时
+            $('#createFirstDoc').click(function(e) {
+                e.preventDefault();
+                
+                // 显示加载状态
+                $(this).html('<i class="fas fa-spinner fa-spin"></i> 处理中...');
+                
+                // 尝试访问提交文档页面
+                $.ajax({
+                    url: '/submit_document',
+                    type: 'GET',
+                    success: function() {
+                        window.location.href = '/submit_document';
+                    },
+                    error: function(xhr) {
+                        // 恢复按钮状态
+                        $('#createFirstDoc').html('<i class="fas fa-plus"></i> 创建第一个文档');
+                        
+                        // 显示错误消息
+                        let errorMsg = "加载提交页面时出错，请重试";
+                        if (xhr.status === 500) {
+                            errorMsg = "服务器内部错误，请稍后再试";
+                        } else if (xhr.status === 404) {
+                            errorMsg = "页面未找到，请联系管理员";
+                        }
+                        
+                        $('.error-detail').text(errorMsg);
+                        $('.error-message').fadeIn();
+                        
+                        // 5秒后自动隐藏错误消息
+                        setTimeout(function() {
+                            $('.error-message').fadeOut();
+                        }, 5000);
+                    }
+                });
+            });
+            
+            // 监控系统状态
+            function checkSystemStatus() {
+                $.ajax({
+                    url: '/api/system_status',
+                    type: 'GET',
+                    success: function(data) {
+                        if (data.status === 'good') {
+                            $('.system-status').removeClass('status-warning').addClass('status-good').text('系统运行正常');
+                        } else {
+                            $('.system-status').removeClass('status-good').addClass('status-warning').text('系统部分功能受限');
+                        }
+                    },
+                    error: function() {
+                        $('.system-status').removeClass('status-good').addClass('status-warning').text('状态检查失败');
+                    }
+                });
+            }
+            
+            // 每30秒检查一次系统状态
+            checkSystemStatus();
+            setInterval(checkSystemStatus, 30000);
+        });
+    </script>
+</body>
+</html>

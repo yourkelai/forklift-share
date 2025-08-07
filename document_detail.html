@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ document.title }}</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        .action-buttons {
+            margin: 20px 0;
+        }
+        .action-buttons .btn {
+            margin-right: 10px;
+        }
+        .comment-form {
+            margin-top: 30px;
+        }
+        .comment {
+            border-bottom: 1px solid #eee;
+            padding: 15px 0;
+        }
+        .comment:last-child {
+            border-bottom: none;
+        }
+        .comment-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .comment-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+            background-color: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #555;
+        }
+        .comment-user {
+            font-weight: bold;
+        }
+        .comment-time {
+            color: #777;
+            font-size: 0.9em;
+            margin-left: auto;
+        }
+        .like-btn.active {
+            color: #28a745;
+        }
+        .dislike-btn.active {
+            color: #dc3545;
+        }
+        .comment-stats {
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .stat-label {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h2>{{ document.title }}</h2>
+        <p>作者: {{ document.author.username }} | 价格: {{ document.price }}分 | 阅读量: {{ document.read_count }}</p>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        {% if content %}
+        <div class="card mt-3">
+            <div class="card-body">
+                <pre>{{ content }}</pre>
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-warning mt-3">
+            您尚未购买此文档
+            <form method="POST" action="{{ url_for('purchase_document', doc_id=document.id) }}" class="mt-2">
+                <button type="submit" class="btn btn-primary">支付 {{ document.price }} 积分阅读</button>
+            </form>
+        </div>
+        {% endif %}
+        
+        <!-- 评论统计 -->
+        <div class="comment-stats">
+            <div class="stat-item">
+                <div class="stat-value">{{ likes_count }}</div>
+                <div class="stat-label">点赞</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ comments_count }}</div>
+                <div class="stat-label">评论</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ dislikes_count }}</div>
+                <div class="stat-label">差评</div>
+            </div>
+        </div>
+        
+        <!-- 点赞/差评按钮 -->
+        <div class="action-buttons">
+            <form method="POST" action="{{ url_for('add_comment', doc_id=document.id) }}" style="display: inline;">
+                <input type="hidden" name="type" value="like">
+                <button type="submit" class="btn btn-outline-success like-btn {% if user_liked %}active{% endif %}">
+                    <i class="fas fa-thumbs-up"></i> 点赞
+                </button>
+            </form>
+            <form method="POST" action="{{ url_for('add_comment', doc_id=document.id) }}" style="display: inline;">
+                <input type="hidden" name="type" value="dislike">
+                <button type="submit" class="btn btn-outline-danger dislike-btn {% if user_disliked %}active{% endif %}">
+                    <i class="fas fa-thumbs-down"></i> 差评
+                </button>
+            </form>
+        </div>
+        
+        <!-- 评论表单 -->
+        <div class="comment-form">
+            <h4>发表评论</h4>
+            <form method="POST" action="{{ url_for('add_comment', doc_id=document.id) }}">
+                <input type="hidden" name="type" value="comment">
+                <div class="form-group">
+                    <textarea class="form-control" name="content" rows="3" placeholder="写下您的评论..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">提交评论</button>
+            </form>
+        </div>
+        
+        <!-- 评论列表 -->
+        <div class="comments mt-4">
+            <h4>评论列表</h4>
+            <div id="commentsContainer">
+                {% for comment in document.comments|sort(attribute='created_at', reverse=True) %}
+                    {% if comment.type == 'comment' %}
+                    <div class="comment">
+                        <div class="comment-header">
+                            <div class="comment-avatar">
+                                {{ comment.user.username[:1] }}
+                            </div>
+                            <div class="comment-user">{{ comment.user.username }}</div>
+                            <div class="comment-time">{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                        </div>
+                        <div class="comment-body">
+                            {{ comment.content }}
+                        </div>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <div class="alert alert-info">暂无评论</div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <a href="{{ url_for('home') }}" class="btn btn-secondary mt-3">返回首页</a>
+    </div>
+    
+    <!-- jQuery 和 Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <script>
+        // 自动刷新评论
+        function refreshComments() {
+            $.getJSON("{{ url_for('get_comments', doc_id=document.id) }}", function(comments) {
+                $('#commentsContainer').empty();
+                
+                if (comments.length === 0) {
+                    $('#commentsContainer').html('<div class="alert alert-info">暂无评论</div>');
+                    return;
+                }
+                
+                comments.forEach(function(comment) {
+                    if (comment.type === 'comment') {
+                        const commentElement = `
+                            <div class="comment">
+                                <div class="comment-header">
+                                    <div class="comment-avatar" style="background-color: ${getRandomColor()}">
+                                        ${comment.username.charAt(0)}
+                                    </div>
+                                    <div class="comment-user">${comment.username}</div>
+                                    <div class="comment-time">${comment.created_at}</div>
+                                </div>
+                                <div class="comment-body">
+                                    ${comment.content}
+                                </div>
+                            </div>
+                        `;
+                        $('#commentsContainer').append(commentElement);
+                    }
+                });
+            });
+        }
+        
+        // 生成随机颜色
+        function getRandomColor() {
+            const colors = ['#f0f8ff', '#faebd7', '#7fffd4', '#f0ffff', '#f5f5dc', '#ffe4c4'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+        
+        // 每30秒刷新一次评论
+        setInterval(refreshComments, 30000);
+    </script>
+</body>
+</html>

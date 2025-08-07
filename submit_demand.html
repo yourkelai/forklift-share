@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>发布新需求 - 叉车维修技术共享平台</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        .demand-form-card {
+            border-radius: 15px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+            margin-top: 30px;
+            border: none;
+        }
+        .form-header {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            padding: 20px;
+        }
+        .form-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        .form-section h4 {
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            color: #1e88e5;
+        }
+        .point-input {
+            max-width: 200px;
+        }
+        .btn-submit {
+            border-radius: 30px;
+            padding: 10px 30px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            background: linear-gradient(135deg, #1e88e5, #0d47a1);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        .btn-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(30, 136, 229, 0.4);
+        }
+        .example-box {
+            background-color: #e8f4ff;
+            border-left: 4px solid #1e88e5;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    {% include 'navbar.html' %}
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="demand-form-card">
+                    <div class="form-header text-center">
+                        <h2><i class="fas fa-plus-circle"></i> 发布新需求</h2>
+                        <p>填写下表发布您的积分交易需求</p>
+                    </div>
+                    
+                    <div class="card-body">
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ category }} alert-dismissible fade show">
+                                        {{ message }}
+                                        <button type="button" class="close" data-dismiss="alert">
+                                            <span>&times;</span>
+                                        </button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+                        
+                        <form method="POST" action="/submit_demand">
+                            <!-- 需求基本信息 -->
+                            <div class="form-section">
+                                <h4><i class="fas fa-info-circle"></i> 需求基本信息</h4>
+                                <div class="form-group">
+                                    <label for="title">需求标题 *</label>
+                                    <input type="text" class="form-control" id="title" name="title" 
+                                           placeholder="例如：寻求叉车维修服务" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="type">需求类型 *</label>
+                                    <select class="form-control" id="type" name="type" required>
+                                        <option value="service">服务需求</option>
+                                        <option value="parts">配件需求</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="points">期望积分 *</label>
+                                    <div class="input-group point-input">
+                                        <input type="number" class="form-control" id="points" name="points" 
+                                               min="10" value="100" required>
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">分</span>
+                                        </div>
+                                    </div>
+                                    <small class="form-text text-muted">设置完成需求后可获得的积分</small>
+                                </div>
+                            </div>
+                            
+                            <!-- 需求详情 -->
+                            <div class="form-section">
+                                <h4><i class="fas fa-file-alt"></i> 需求详情</h4>
+                                <div class="form-group">
+                                    <label for="description">详细描述 *</label>
+                                    <textarea class="form-control" id="description" name="description" 
+                                              rows="5" placeholder="请详细描述您的需求，例如：需要维修的叉车型号、问题描述、配件规格等" required></textarea>
+                                </div>
+                                
+                                <div class="example-box">
+                                    <h5><i class="fas fa-lightbulb"></i> 优秀需求描述示例：</h5>
+                                    <p>"我的3吨电动叉车（型号：FD30）液压系统出现故障，升降速度缓慢并有异响。需要专业技师上门诊断维修，提供维修后3个月保修。"</p>
+                                    <p>"求购林德叉车原装货叉，规格：1070×120×40，要求全新或9成新以上，提供购买凭证。"</p>
+                                </div>
+                            </div>
+                            
+                            <!-- 联系方式 -->
+                            <div class="form-section">
+                                <h4><i class="fas fa-address-card"></i> 联系方式</h4>
+                                <div class="form-group">
+                                    <label for="contact">联系方式 *</label>
+                                    <input type="text" class="form-control" id="contact" name="contact" 
+                                           placeholder="电话或邮箱" required>
+                                    <small class="form-text text-muted">其他用户将通过此方式联系您</small>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center mt-4">
+                                <button type="submit" class="btn btn-submit">
+                                    <i class="fas fa-paper-plane"></i> 发布需求
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <h5><i class="fas fa-exclamation-circle text-warning"></i> 注意事项</h5>
+                        <ul>
+                            <li>请确保需求描述清晰准确，避免歧义</li>
+                            <li>设置合理的积分奖励，吸引更多用户参与</li>
+                            <li>平台仅提供信息发布服务，不参与实际交易</li>
+                            <li>交易双方应自行核实对方身份和交易内容</li>
+                            <li>完成交易后请及时关闭需求</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // 自动填充联系方式建议
+            $('#contact').focus(function() {
+                if (!this.value) {
+                    this.value = "{{ session.username }}@example.com";
+                }
+            });
+            
+            // 需求类型改变时更新提示
+            $('#type').change(function() {
+                const type = $(this).val();
+                if (type === 'service') {
+                    $('#description').attr('placeholder', '请详细描述您需要的服务，例如：服务内容、地点、时间要求等');
+                } else {
+                    $('#description').attr('placeholder', '请详细描述您需要的配件，例如：型号、规格、数量、质量要求等');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
